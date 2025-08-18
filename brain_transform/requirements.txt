@@ -1,0 +1,13 @@
+pandas
+matplotlib
+scipy
+scikit-learn
+dvc[s3]
+gitpython
+apscheduler
+fastapi
+uvicorn
+requests
+python-multipart
+fastapi
+pytest

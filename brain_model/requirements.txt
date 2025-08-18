@@ -1,0 +1,10 @@
+optuna
+mlflow
+dvc
+dvc-s3
+seaborn
+pandas
+scikit-learn
+pytest
+numpy
+torchmetrics

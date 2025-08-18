@@ -1,0 +1,6 @@
+.aws
+*.csv
+.venv
+data
+test
+*.env

@@ -1,0 +1,38 @@
+FROM python:3.9-slim
+
+# Install system dependencies including Rust
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    build-essential \
+    curl \
+    && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Add cargo to PATH
+ENV PATH="/root/.cargo/bin:${PATH}"
+
+WORKDIR /app
+
+# Accept build arguments with defaults
+ARG COMMIT_TAG=unknown
+ARG COMMIT_HASH=unknown
+ARG API_HOST=0.0.0.0
+ARG API_PORT=8000
+
+# Set environment variables
+ENV GIT_COMMIT_TAG=${COMMIT_TAG}
+ENV GIT_COMMIT_HASH=${COMMIT_HASH}
+ENV API_HOST=${API_HOST}
+ENV API_PORT=${API_PORT}
+
+# Copy requirements and install dependenciess
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the signal toolkit before the API code
+COPY src/signal_toolkit.py .
+COPY src/api.py .
+
+# Command to start FastAPI
+CMD ["sh", "-c", "python -m uvicorn api:app --host 0.0.0.0 --port ${API_PORT:-8000}"]

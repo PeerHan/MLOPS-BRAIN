@@ -1,0 +1,11 @@
+services:
+  brain_monitor:
+    build: .
+    environment:
+      - GIT_COMMIT_TAG=${GIT_COMMIT_TAG:-latest}
+      - BRAIN_REPO_TOKEN=${BRAIN_REPO_TOKEN:?BRAIN_REPO_TOKEN is required}
+      - DVCFOLDER=${DVCFOLDER:-data_raw}
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - .aws:/app/.aws

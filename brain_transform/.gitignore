@@ -1,0 +1,9 @@
+__pycache__
+.aws
+.venv
+data_raw
+etl_finished
+etl_processed
+repo
+*.ipynb
+.env

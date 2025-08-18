@@ -1,0 +1,12 @@
+**/.ipynb_checkpoints
+**/mlruns
+.mlruns
+.DS_Store
+data/
+data_split/
+**/__pycache/
+**/__pycache__/
+.idea/
+.aws/
+.venv
+.env

@@ -1,0 +1,119 @@
+stages:
+  - lint
+  - test
+  - build_and_register_base_image
+  - build_and_register_images
+
+default:
+  image: python:3.11.0
+
+variables:
+  GIT_DEPTH: 1  # Minimum depth needed for this pipeline
+
+.python-setup: &python-setup
+  before_script:
+    - python3 -m venv venv
+    - source venv/bin/activate
+    - pip install --upgrade pip
+
+linting:
+  image: python:3.11
+  stage: lint
+  <<: *python-setup
+  script:
+    - pip install pylint
+    # Install torchmetrics after PyTorch to prevent CUDA downloads
+    - pylint --rcfile=.pylintrc src/
+
+model_and_tuning_test:
+  image: python:3.11
+  stage: test
+  <<: *python-setup
+  script:
+    - pip install torch==2.5.1 torchvision==0.20.1 --index-url https://download.pytorch.org/whl/cpu
+    - pip install torchmetrics
+    - pip install -r requirements.txt
+    - pytest tests/ --disable-warnings
+    # Install CPU-only PyTorch first
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      changes:
+        - src/**
+        - tests/**
+        - requirements.txt
+
+# use kaniko instead of docker-in-docker: https://docs.gitlab.com/ee/ci/docker/using_kaniko.html
+build_and_register_base_image:
+  stage: build_and_register_base_image
+  variables:
+    CONTAINER_DESTINATION: "registry.code.fbi.h-da.de/mlops-brain/brain_model/base"
+    VERSION_TAG: "${CI_COMMIT_SHORT_SHA}"
+  image:
+    name: gcr.io/kaniko-project/executor:v1.23.2-debug
+    entrypoint: [""]
+  before_script:
+    - echo "{\"auths\":{\"registry.code.fbi.h-da.de\":{\"username\":\"mlops\",\"password\":\"$TOKEN_MAINTAINER\"}}}" > /kaniko/.docker/config.json
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      changes:
+        - requirements.txt
+        - Dockerfile.base
+  script:
+    - echo "Building and pushing docker container ..."
+    - /kaniko/executor
+      --cache=true
+      --cache-repo=registry.code.fbi.h-da.de/mlops-brain/brain_model/cache
+      --context "./"
+      --dockerfile "./Dockerfile.base"
+      --destination "${CONTAINER_DESTINATION}:${VERSION_TAG}"
+      --destination "${CONTAINER_DESTINATION}:latest"
+      
+# use kaniko instead of docker-in-docker: https://docs.gitlab.com/ee/ci/docker/using_kaniko.html
+build_and_register_app_image:
+  stage: build_and_register_images
+  variables:
+    CONTAINER_DESTINATION: "registry.code.fbi.h-da.de/mlops-brain/brain_model/app"
+    VERSION_TAG: "${CI_COMMIT_SHORT_SHA}"
+  image:
+    name: gcr.io/kaniko-project/executor:v1.23.2-debug
+    entrypoint: [""]
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      changes:
+        - Dockerfile
+        - src/**
+        - requirements.txt
+        - Dockerfile.base 
+  before_script:
+    - echo "{\"auths\":{\"registry.code.fbi.h-da.de\":{\"username\":\"mlops\",\"password\":\"$TOKEN_MAINTAINER\"}}}" > /kaniko/.docker/config.json
+  script:
+    - echo "Building and pushing docker container ..."
+    - /kaniko/executor
+      --context "./"
+      --dockerfile "./Dockerfile"
+      --build-arg=COMMIT_TAG=${CI_COMMIT_SHORT_SHA}
+      --destination "${CONTAINER_DESTINATION}:${VERSION_TAG}"
+      --destination "${CONTAINER_DESTINATION}:latest"
+
+build_and_register_trigger_image:
+  stage: build_and_register_images
+  variables:
+    CONTAINER_DESTINATION: "registry.code.fbi.h-da.de/mlops-brain/brain_model/trigger"
+    VERSION_TAG: "${CI_COMMIT_SHORT_SHA}"
+  image:
+    name: gcr.io/kaniko-project/executor:v1.23.2-debug
+    entrypoint: [""]
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      changes:
+        - Dockerfile.trigger
+        - additional_scripts/model_trigger.py
+        - requirements_trigger.txt
+  before_script:
+    - echo "{\"auths\":{\"registry.code.fbi.h-da.de\":{\"username\":\"mlops\",\"password\":\"$TOKEN_MAINTAINER\"}}}" > /kaniko/.docker/config.json
+  script:
+    - echo "Building and pushing docker container ..."
+    - /kaniko/executor
+      --context "./"
+      --dockerfile "./Dockerfile.trigger"
+      --destination "${CONTAINER_DESTINATION}:latest"
