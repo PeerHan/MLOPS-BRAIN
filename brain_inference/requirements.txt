@@ -1,0 +1,8 @@
+mlflow
+requests
+fastapi
+pandas
+torch
+torchvision
+uvicorn
+python-multipart

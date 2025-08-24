@@ -1,0 +1,17 @@
+networks:
+  frontend: # docker network create -d bridge frontend
+    external: true
+
+services:
+  transform_service:
+    image: registry.code.fbi.h-da.de/mlops-brain/brain_transform/api:latest
+    container_name: transform_service
+    expose:
+      - "${API_PORT:-8000}"
+    env_file:
+      - .env
+    networks:
+      - frontend    
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    restart: unless-stopped

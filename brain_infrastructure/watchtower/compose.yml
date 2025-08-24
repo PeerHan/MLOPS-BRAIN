@@ -1,0 +1,12 @@
+services:
+  watchtower:
+    image: containrrr/watchtower:latest
+    container_name: watchtower
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./config.json:/config.json:ro # needed for update of containers from private registry
+    environment:
+      - WATCHTOWER_LABEL_ENABLE=true # Enable label-based updates
+      - WATCHTOWER_POLL_INTERVAL=20
+      - WATCHTOWER_CLEANUP=true
+    restart: unless-stopped

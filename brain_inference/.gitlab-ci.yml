@@ -1,0 +1,51 @@
+stages:
+  - build_and_register_base_image
+  - build_and_register_app_image
+
+# use kaniko instead of docker-in-docker: https://docs.gitlab.com/ee/ci/docker/using_kaniko.html
+build_and_register_base_image:
+  stage: build_and_register_base_image
+  variables:
+    CONTAINER_DESTINATION: "registry.code.fbi.h-da.de/mlops-brain/brain_inference/base"
+  image:
+    name: gcr.io/kaniko-project/executor:v1.23.2-debug
+    entrypoint: [""]
+  before_script:
+    - echo "{\"auths\":{\"registry.code.fbi.h-da.de\":{\"username\":\"mlops\",\"password\":\"$TOKEN_MAINTAINER\"}}}" > /kaniko/.docker/config.json
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"
+      changes:
+        - requirements.txt
+        - Dockerfile.base
+  script:
+    - echo "Building and pushing docker container ..."
+    - /kaniko/executor
+      --cache=true
+      --cache-repo=registry.code.fbi.h-da.de/mlops-brain/brain_inference/cache
+      --context "./"
+      --dockerfile "./Dockerfile.base"
+      --destination "${CONTAINER_DESTINATION}:latest"
+      
+# use kaniko instead of docker-in-docker: https://docs.gitlab.com/ee/ci/docker/using_kaniko.html
+build_and_register_app_image:
+  stage: build_and_register_app_image
+  variables:
+    CONTAINER_DESTINATION: "registry.code.fbi.h-da.de/mlops-brain/brain_inference/app"
+  image:
+    name: gcr.io/kaniko-project/executor:v1.23.2-debug
+    entrypoint: [""]
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"
+      changes:
+        - Dockerfile
+        - src/**
+        - requirements.txt
+        - Dockerfile.base
+  before_script:
+    - echo "{\"auths\":{\"registry.code.fbi.h-da.de\":{\"username\":\"mlops\",\"password\":\"$TOKEN_MAINTAINER\"}}}" > /kaniko/.docker/config.json
+  script:
+    - echo "Building and pushing docker container ..."
+    - /kaniko/executor
+      --context "./"
+      --dockerfile "./Dockerfile"
+      --destination "${CONTAINER_DESTINATION}:latest"

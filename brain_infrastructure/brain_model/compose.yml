@@ -1,0 +1,15 @@
+# compose file for test purpose
+
+services:
+  brain_model:
+    image: registry.code.fbi.h-da.de/mlops-brain/brain_model/app:latest
+    # build:
+    #   context: .
+    #   dockerfile: Dockerfile
+    container_name: brain_model
+    env_file:
+      - model.env
+    volumes:
+      - .aws:/root/.aws
+      # - ./data_split:/app/data_split
+    network_mode: host

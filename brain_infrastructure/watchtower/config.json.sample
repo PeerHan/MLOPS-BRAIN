@@ -1,0 +1,7 @@
+{
+    "auths": {
+            "registry.code.fbi.h-da.de": {
+                    "auth": "token" // generate by running  docker login registry.code.fbi.h-da.de and logigng in using your user and personal access token. following that the needed conig.json is created inside ~(.docker folder
+            }
+    }
+}

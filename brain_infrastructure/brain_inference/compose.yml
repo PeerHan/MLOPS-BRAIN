@@ -1,0 +1,17 @@
+networks:
+  frontend:
+    external: true
+
+services:
+  brain_inference:
+    image: registry.code.fbi.h-da.de/mlops-brain/brain_inference/app:latest
+    container_name: brain_inference
+    expose:
+      - "8001"
+    env_file:
+      - .env
+    networks:
+      - frontend
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    restart: unless-stopped

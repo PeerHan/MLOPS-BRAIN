@@ -1,0 +1,3 @@
+# Nginx Proxy Manager
+Nginx Proxy Manager is a reverse proxy management system offering a UI for Nginx. Due to its letsencrypt integration it is easy to configure ssl certificates to subdomains and theirfor serve all services in an encrypted manner.
+It also allows defining access rules which were used to allow access to the interal api endpoints only using credentials, or without, if the requests originates from the same machine.

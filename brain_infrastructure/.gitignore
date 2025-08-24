@@ -1,0 +1,17 @@
+*_data
+mlruns
+*.env
+config
+config.json
+dags
+logs
+plugin
+*_runner
+data
+.aws
+etl_finished
+dvc_repo_raw
+etl_processed
+etl_start
+dags
+artifacts

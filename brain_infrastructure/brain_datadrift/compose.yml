@@ -1,0 +1,18 @@
+networks:
+  frontend:
+    external: true
+services:
+  brain_monitor:
+    image: registry.code.fbi.h-da.de/mlops-brain/brain_monitor/brain_monitor
+    environment:
+      - GIT_COMMIT_TAG=${GIT_COMMIT_TAG:-latest}
+      - BRAIN_REPO_TOKEN=${BRAIN_REPO_TOKEN:?BRAIN_REPO_TOKEN is required}
+      - DVCFOLDER=${DVCFOLDER:-data_raw}
+    ports:
+      - "127.0.0.1:8000:8000"
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    volumes:
+      - .aws:/app/.aws
+    networks:
+      - frontend

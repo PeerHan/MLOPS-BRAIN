@@ -1,0 +1,13 @@
+services:
+  brain_receiver:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: brain_receiver
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"  # Map port 8000 on the host to port 8000 in the container
+    volumes:
+      - ./data:/app/uploads/output # Optional: Mount a local folder for file persistence
+    # restart: unless-stopped  # Restart the container unless explicitly stopped

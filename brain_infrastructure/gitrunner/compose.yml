@@ -1,0 +1,48 @@
+# runner by Helmut Liu
+networks:
+  frontend: # docker network create -d bridge --subnet=172.21.0.0/16 frontend
+    external: true
+  backend:
+
+services:
+  brain_receiver_runner:
+    build:
+      context: .
+    container_name: brain_receiver_runner
+    restart: always
+    env_file:
+      - receiver.env
+    volumes:
+      - ./brain_receiver_runner:/etc/gitlab-runner/ 
+      - /var/run/docker.sock:/var/run/docker.sock
+  brain_transform_runner:
+    build:
+      context: .
+    container_name: brain_transform_runner
+    restart: always
+    env_file:
+      - transform.env
+    volumes:
+      - ./brain_transform_runner:/etc/gitlab-runner/ 
+      - /var/run/docker.sock:/var/run/docker.sock
+  brain_data_runner:
+    build:
+      context: .
+    container_name: brain_data_runner
+    restart: always
+    env_file:
+      - data.env
+    volumes:
+      - ./brain_data_runner:/etc/gitlab-runner/ 
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  brain_model_runner:
+    build:
+      context: .
+    container_name: brain_model_runner
+    restart: always
+    env_file:
+      - model.env
+    volumes:
+      - ./brain_model_runner:/etc/gitlab-runner/ 
+      - /var/run/docker.sock:/var/run/docker.sock

@@ -1,0 +1,19 @@
+stages:
+  - deploy
+
+deploy:
+  stage: deploy
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache openssh-client
+    - eval $(ssh-agent -s)
+    - echo "$CI_SSH_PRI" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - ssh-keyscan -H $DOCKE_HOST >> ~/.ssh/known_hosts
+  script:
+    - ssh brain_ci@$DOCKE_HOST "mkdir -p ~/temp_dags"
+    - scp -r ./* brain_ci@$DOCKE_HOST:~/temp_dags/
+    - ssh brain_ci@$DOCKE_HOST "sudo cp -a ~/temp_dags/* /services/brain_infrastructure/airflow2/dags/ && rm -rf ~/temp_dags"
+  only:
+    - main

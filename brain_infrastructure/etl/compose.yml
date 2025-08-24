@@ -1,0 +1,32 @@
+networks:
+  frontend:
+    external: true
+
+services:
+  brain_extract:
+    image: registry.code.fbi.h-da.de/mlops-brain/brain_receiver/app:latest
+    container_name: brain_extract
+    env_file:
+      - receiver.env
+    expose:
+      - 8000
+    volumes:
+      - ./data:/app/uploads/output # Optional: Mount a local folder for file persistence
+    restart: unless-stopped  
+    networks:
+      - frontend  
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+
+  brain_load_raw:
+    image: registry.code.fbi.h-da.de/mlops-brain/brain_data/raw_data_tracker:latest
+    container_name: brain_load_raw
+    env_file:
+      - linage_raw.env
+    volumes:
+      - ./data:/app/collect_point
+      # - ./etl_start:/app/etl
+      - .aws:/root/.aws
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    restart: unless-stopped

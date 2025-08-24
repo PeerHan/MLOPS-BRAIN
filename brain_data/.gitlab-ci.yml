@@ -1,0 +1,26 @@
+stages:
+  - build_and_register_container
+
+default:
+  image: python:3.13.0
+  timeout: 1m
+  # tags:
+
+# use kaniko instead of docker-in-docker: https://docs.gitlab.com/ee/ci/docker/using_kaniko.html
+build_and_register_container:
+  stage: build_and_register_container
+  variables:
+    CONTAINER_DESTINATION: "registry.code.fbi.h-da.de/mlops-brain/brain_data/raw_data_tracker"
+  only:
+    - master
+  image:
+    name: gcr.io/kaniko-project/executor:v1.23.2-debug
+    entrypoint: [""]
+  before_script:
+    - echo "{\"auths\":{\"registry.code.fbi.h-da.de\":{\"username\":\"dashboard\",\"password\":\"$TOKEN_MAINTAINER\"}}}" > /kaniko/.docker/config.json
+  script:
+    - echo "Building and pushing docker container ..."
+    - /kaniko/executor
+      --context "./"
+      --dockerfile "./Dockerfile"
+      --destination $CONTAINER_DESTINATION

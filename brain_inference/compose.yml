@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  inference:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - inference.env
+    ports:
+      - 8001:8001

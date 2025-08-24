@@ -1,0 +1,18 @@
+networks:
+  frontend:
+    external: true
+
+services:
+  brain_load:
+    # image: registry.code.fbi.h-da.de/mlops-brain/brain_data/raw_data_tracker:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: brain_load
+    env_file:
+      - linage.env
+    volumes:
+      - ./data:/app/collect_point
+      - .aws:/root/.aws
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"

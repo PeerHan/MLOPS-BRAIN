@@ -1,0 +1,26 @@
+networks:
+  frontend: # docker network create -d bridge frontend
+    external: true
+
+services:
+# https://nginxproxymanager.com/setup/#running-the-app
+  npm_proxy:
+    image: 'jc21/nginx-proxy-manager:2.12.1'
+    container_name: npm_proxy
+    restart: unless-stopped
+    ports:
+      - '80:80' 
+      - '443:443' 
+      # - '127.0.0.1:81:81' # Admin Web Port. This line can be commented after setting this up as a proxy host in NPM
+    environment:
+      # Uncomment this if IPv6 is not enabled on your host
+      - DISABLE_IPV6=true
+      - TZ=Europe/Berlin
+      - PUID=1000
+      - PGID=1000
+    volumes:
+      - ./npm_data:/data
+      - ./letsencrypt_data:/etc/letsencrypt
+      # - ./snippets:/snippets
+    networks:
+      frontend:
